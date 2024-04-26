@@ -1,5 +1,8 @@
 package models;
 
+import exceptions.InvalidMoveException;
+import strategies.WinningAlgorithm;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,6 +13,7 @@ public class Game {
     private GameState gameState;
     private Player winner;
     private int nextPlayerIndex;
+    private WinningAlgorithm winningAlgorithm;
 
     public Game(int dimension,List<Player> players){
         this.board = new Board(dimension);
@@ -18,6 +22,7 @@ public class Game {
         this.gameState = GameState.IN_PROGRESS;
         this.winner = null;
         this.nextPlayerIndex = 0;
+        this.winningAlgorithm = new WinningAlgorithm();
     }
 
     public Game(Board board, List<Player> players, List<Move> moves, GameState gameState, Player winner, int nextPlayerIndex) {
@@ -82,6 +87,35 @@ public class Game {
     }
 
     public void makeMove(){
-        
+        Player currentPlayer = players.get(nextPlayerIndex);
+        System.out.println(currentPlayer.getName() + " : Please make your move");
+        Move move = currentPlayer.makeMove(board);
+
+        if (!isValidMove(move)) throw new InvalidMoveException("Dear player "+currentPlayer.getName()+" The move that you are trying to make is Invalid. Please try something else!");
+
+        int r = move.getCell().getRow();
+        int c = move.getCell().getCol();
+
+        Cell cellToChange = board.getBoard().get(r).get(c);
+        cellToChange.setPlayer(currentPlayer);
+        cellToChange.setCellState(CellState.FILLED);
+
+        Move finalMove = new Move(cellToChange,currentPlayer);
+        moves.add(finalMove);
+        nextPlayerIndex = (nextPlayerIndex + 1)%players.size();
+
+        // Game over ?
+        if (winningAlgorithm.checkWinner(board,finalMove)){
+            gameState = GameState.ENDED;
+            winner = currentPlayer;
+        }
     }
+
+    public boolean isValidMove(Move move){
+        int r = move.getCell().getRow();
+        int c = move.getCell().getCol();
+        if (r<0 || c<0 || r>=board.getSize() || c>=board.getSize()) return false;
+        return board.getBoard().get(r).get(c).getCellState().equals(CellState.EMPTY);
+    }
+
 }

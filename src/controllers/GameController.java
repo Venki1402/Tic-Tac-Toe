@@ -16,7 +16,7 @@ public class GameController {
     }
 
     public void makeMove(Game game){
-        return;
+        game.makeMove();
     }
 
     public GameState checkState(Game game){
@@ -27,7 +27,7 @@ public class GameController {
         return game.getWinner();
     }
 
-    public void prinBoard(Game game){
+    public void printBoard(Game game){
         game.printBoard();
     }
 
